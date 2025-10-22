@@ -81,7 +81,23 @@ const initializeClient = async ({ req, res, endpointOption, overrideModel, optio
     if (overrideModel) {
       clientOptions.modelOptions.model = overrideModel;
     }
-    return getGoogleConfig(credentials, clientOptions);
+    const result = getGoogleConfig(credentials, clientOptions);
+    
+    // Configure proxy for Google Generative AI SDK used by agents
+    if (clientOptions.proxy && result.llmConfig) {
+      result.llmConfig.proxyUrl = clientOptions.proxy;
+      
+      // Set up undici global dispatcher to route all fetch requests through proxy
+      try {
+        const { ProxyAgent, setGlobalDispatcher } = require('undici');
+        const proxyAgent = new ProxyAgent(clientOptions.proxy);
+        setGlobalDispatcher(proxyAgent);
+      } catch (error) {
+        // Proxy configuration failed, but continue without it
+      }
+    }
+    
+    return result;
   }
 
   const client = new GoogleClient(credentials, clientOptions);
