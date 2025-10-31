@@ -193,7 +193,6 @@ export function getGoogleConfig(
     };
   }
 
-  // Add proxy configuration for agents
   if (options.proxy) {
     (llmConfig as GoogleClientOptions).proxyUrl = options.proxy;
   }
